@@ -6,6 +6,12 @@ using namespace geode::prelude;
 
 static bool g_attacking = false;
 
+// resources are packed into the mod's spritesheet; null if the frame is missing
+static CCSprite* modSprite(char const* frame) {
+    if (!CCSpriteFrameCache::get()->spriteFrameByName(frame)) return nullptr;
+    return CCSprite::createWithSpriteFrameName(frame);
+}
+
 // swap every pause button's icon to a custom one and disable it
 static void ransomifyButtons(CCNode* node) {
     for (auto child : CCArrayExt<CCNode*>(node->getChildren())) {
@@ -13,8 +19,8 @@ static void ransomifyButtons(CCNode* node) {
             auto orig = btn->getContentSize();
             auto name = fmt::format("{}/ransom-{}.png",
                 std::string_view(Mod::get()->getID()), std::string_view(btn->getID()));
-            auto spr = CCSprite::create(name.c_str());
-            if (!spr) spr = CCSprite::create("ransom-button.png"_spr);
+            auto spr = modSprite(name.c_str());
+            if (!spr) spr = modSprite("ransom-button.png"_spr);
             if (spr && orig.width > 0 && orig.height > 0) {
                 auto holder = CCNode::create();
                 holder->setContentSize(orig);
@@ -48,6 +54,7 @@ class $modify(RansomPause, PauseLayer) {
     void customSetup() {
         PauseLayer::customSetup();
         if (!g_attacking) return;
+        log::info("Ransom: pause menu encrypted");
         auto f = m_fields.self();
         auto win = CCDirector::get()->getWinSize();
 
@@ -110,6 +117,7 @@ class $modify(RansomPause, PauseLayer) {
     }
 
     void ransomFinish(bool won) {
+        log::info("Ransom: {}", won ? "paid, resuming" : "out of time, killing player");
         m_fields->done = true;
         this->unschedule(schedule_selector(RansomPause::ransomTick));
         g_attacking = false;
@@ -146,6 +154,10 @@ class $modify(RansomPL, PlayLayer) {
         f->armed = chance > 0 && rand() % chance == 0;
         f->timer = 0.f;
         f->at = 1.f + (rand() % 1400) / 100.f; // 1-15s into the attempt
+        if (f->armed)
+            log::info("Ransom: armed, appears {:.2f}s into this attempt", f->at);
+        else
+            log::debug("Ransom: not this attempt (1 in {})", chance);
     }
 
     bool init(GJGameLevel* l, bool a, bool b) {
@@ -176,8 +188,12 @@ class $modify(RansomPL, PlayLayer) {
     void showRansom() {
         auto f = m_fields.self();
         auto win = CCDirector::get()->getWinSize();
-        f->spr = CCSprite::create("ransom.png"_spr);
-        if (!f->spr) return;
+        f->spr = modSprite("ransom.png"_spr);
+        if (!f->spr) {
+            log::error("Ransom: couldn't load ransom.png from the mod spritesheet");
+            return;
+        }
+        log::info("Ransom: shown");
         f->spr->setPosition({
             60.f + rand() % (int)(win.width - 120),
             60.f + rand() % (int)(win.height - 120)
@@ -195,6 +211,7 @@ class $modify(RansomPL, PlayLayer) {
 
     void onInput() {
         if (!m_fields->shown || g_attacking) return;
+        log::info("Ransom: input while visible, attacking");
         hideRansom();
         g_attacking = true;
         queueInMainThread([this] {
