@@ -1,0 +1,40 @@
+{
+	"geode": "5.10.1",
+	"gd": {
+		"win": "2.2081",
+		"android": "2.2081",
+		"mac": "2.2081",
+		"ios": "2.2081"
+	},
+	"id": "lopro.ransom",
+	"name": "Ransom",
+	"version": "v1.0.0",
+	"developer": "lopro",
+	"description": "Ransom from DOORS: The Archives. Move while it's on screen and it locks your pause menu until you pay up.",
+	"dependencies": {
+		"geode.node-ids": ">=v1.23.3"
+	},
+	"resources": {
+		"sprites": ["resources/*.png"]
+	},
+	"settings": {
+		"chance": {
+			"type": "int",
+			"name": "Ransom chance (1 in N per attempt)",
+			"default": 100,
+			"min": 1
+		},
+		"coins": {
+			"type": "int",
+			"name": "Coins to pay",
+			"default": 20,
+			"min": 1
+		},
+		"time-limit": {
+			"type": "float",
+			"name": "Time limit (seconds)",
+			"default": 10.0,
+			"min": 1.0
+		}
+	}
+}
