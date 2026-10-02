@@ -15,7 +15,8 @@
 		"geode.node-ids": ">=v1.23.3"
 	},
 	"resources": {
-		"sprites": ["resources/*.png"]
+		"sprites": ["resources/*.png", "resources/attack/*.png"],
+		"files": ["resources/sfx/*"]
 	},
 	"settings": {
 		"chance": {
