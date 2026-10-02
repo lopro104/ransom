@@ -21,7 +21,7 @@
 		"chance": {
 			"type": "int",
 			"name": "Ransom chance (1 in N per attempt)",
-			"default": 100,
+			"default": 2,
 			"min": 1
 		},
 		"coins": {
